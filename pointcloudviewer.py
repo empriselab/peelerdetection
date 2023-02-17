@@ -288,7 +288,7 @@ while True:
         # print(depth_frame.is_video_frame())
         print(type(color_frame))
 
-        depth_frame = decimate.process(depth_frame)
+        #depth_frame = decimate.process(depth_frame)
 
         # Grab new intrinsics (may be changed by decimation)
         depth_intrinsics = rs.video_stream_profile(
