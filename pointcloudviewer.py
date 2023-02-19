@@ -275,6 +275,8 @@ def pointcloud(out, verts, texcoords, color, painter=True):
 
 out = np.empty((h, w, 3), dtype=np.uint8)
 
+times = 0
+
 while True:
     # Grab camera data
     if not state.paused:
@@ -282,13 +284,13 @@ while True:
         frames = pipeline.wait_for_frames() #creates composite_frame object
 
         depth_frame = frames.get_depth_frame()
-        # print(depth_frame.is_video_frame())
-        print(type(depth_frame))
         color_frame = frames.get_color_frame()
         # print(depth_frame.is_video_frame())
-        print(type(color_frame))
+        #print(type(color_frame))
 
         #depth_frame = decimate.process(depth_frame)
+        print(type(depth_frame))
+        print(depth_frame.is_video_frame())
 
         # Grab new intrinsics (may be changed by decimation)
         depth_intrinsics = rs.video_stream_profile(
@@ -298,8 +300,7 @@ while True:
         depth_image = np.asanyarray(depth_frame.get_data())
         color_image = np.asanyarray(color_frame.get_data())
 
-        depth_colormap = np.asanyarray(
-            colorizer.colorize(depth_frame).get_data())
+        depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha = 0.03), cv2.COLORMAP_JET)
 
         if state.color:
             mapped_frame, color_source = color_frame, color_image
@@ -363,8 +364,12 @@ while True:
     if key == ord("s"):
         cv2.imwrite('./out.png', out)
 
-    if key == ord("e"):
-        points.export_to_ply('./out.ply', depth_frame)
+    if key == ord("e") and times == 0:
+        points.export_to_ply('./out1.ply', mapped_frame)
+        times = 1
+    elif key == ord("e") and times != 0:
+        points.export_to_ply('./out2.ply', mapped_frame)
+        times = 0
 
     if key in (27, ord("q")) or cv2.getWindowProperty(state.WIN_NAME, cv2.WND_PROP_AUTOSIZE) < 0:
         break
